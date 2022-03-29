@@ -1,0 +1,8 @@
+oauth2client
+gspread
+pytz
+python-dotenv
+pyodbc
+nextcord
+flask
+web3
