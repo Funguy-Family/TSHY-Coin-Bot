@@ -288,19 +288,23 @@ async def funguy_help(interaction: Interaction):
   
   user = interaction.user
   user_id,avatar_url,discord_name,discord_tag = await get_user_details(user)
-  
-  embed = nextcord.Embed(title=title,description="Hello **{}** . Below are the top 10 funguy members.".format(discord_name),color=nextcord.Color.green())
-  status_result = await db.view_top_ten_funguy_user()
-  status_json = json.loads(status_result[0][0])
-  print(status_json)
-  json_size = len(status_json)
+  if await verify.check_if_admin(user_id):
+    embed = nextcord.Embed(title=title,description="Hello **{}** . Below are the top 10 funguy members.".format(discord_name),color=nextcord.Color.green())
+    status_result = await db.view_top_ten_funguy_user()
+    status_json = json.loads(status_result[0][0])
+    json_size = len(status_json)
 
-  for i in range(0, status_json):  
-    embed.add_field(value="{} - {} , funguy owned: {}".format(i, status_json[i]['DiscordUserName'], status_json[i]['NumberOfFunguysOwned']),inline=False)
+    for i in range(0, json_size):  
+      embed.add_field(name="{} place".format(i+1),value="{} - funguy owned: {}".format(status_json[i]['DiscordUserName'], status_json[i]['NumberOfFunguysOwned']),inline=False)
 
-  embed.set_author(name='| Funguy - Help', icon_url=avatar_url) 
-  embed.set_thumbnail(url=avatar_url) 
-  await interaction.response.send_message(embed=embed,ephemeral=True)
+    embed.set_author(name='| Funguy - Help', icon_url=avatar_url) 
+    embed.set_thumbnail(url=avatar_url) 
+
+    await interaction.response.send_message(embed=embed,ephemeral=True)
+
+  else:
+    embed = nextcord.Embed(title=title,description="❌ **Sorry, in development** ❌",color=nextcord.Color.red())
+    await interaction.response.send_message(embed=embed,ephemeral=True)    
 
 async def get_user_details(user):
 
