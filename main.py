@@ -122,7 +122,7 @@ async def funguy_status(interaction: Interaction):
 
   status_result = await db.view_funguy_user(user_id)
   status_json = json.loads(status_result[0][0])
-  print(status_json)
+
   view = nextcord.ui.View()
 
   if status_json[0]['STATUS'] == 0:
@@ -290,7 +290,9 @@ async def funguy_help(interaction: Interaction):
   user_id,avatar_url,discord_name,discord_tag = await get_user_details(user)
   
   embed = nextcord.Embed(title=title,description="Hello **{}** . Below are the top 10 funguy members.".format(discord_name),color=nextcord.Color.green())
-  
+  status_result = await db.view_top_ten_funguy_user()
+  status_json = json.loads(status_result[0][0])
+  print(status_json)
   json_size = len(status_json)
 
   for i in range(0, status_json):  
