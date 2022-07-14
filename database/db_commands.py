@@ -305,6 +305,30 @@ class DB():
       output_json_data = json.dumps(output_data_dict)    
       return output_json_data
 
+  async def view_top_ten_funguy_user(
+    self
+  ):
+ 
+    try:
+      
+      sql = """\
+      EXEC [dbo].[ViewTopTenFunguyUserProc] 
+      """
+      self.cursor = self.conn.cursor()
+      self.cursor.execute(self.noCount + sql)    
+      output_json_data = self.cursor.fetchall()
+      self.cursor.commit()
+      self.cursor.close()
+      del self.cursor      
+      return output_json_data
+    except Exception as e:
+      output_data_dict = {
+        'STATUS': 0,
+        'ErrorMsg': e
+      }
+      output_json_data = json.dumps(output_data_dict)    
+      return output_json_data      
+
 if __name__ == '__main__':
     db = DB()
 

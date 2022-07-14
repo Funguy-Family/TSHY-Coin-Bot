@@ -84,7 +84,8 @@ async def funguy_help(interaction: Interaction):
   user_id,avatar_url,discord_name,discord_tag = await get_user_details(user)
   
   embed = nextcord.Embed(title=title, description="Hello **{}**".format(discord_name), color=nextcord.Color.blue())
-  embed.add_field(name="/funguy_help",value="> Lists all available Commands",inline=False)
+  embed.add_field(name="/funguy_status",value="> Gives your funguy information.",inline=False)
+  embed.add_field(name="/funguy_top_10",value="> Gives information about the top 10 funguy members.",inline=False)
   embed.add_field(name="/funguy_add",value="""> _Add your data for the Tuschay Coin ($TSHY) Airdrop_
                                               > /funguy_add 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25
                                               
@@ -128,7 +129,7 @@ async def funguy_status(interaction: Interaction):
     embed = nextcord.Embed(title=title,description="Hello **{}** . I was unable to find any existing data for your user.".format(discord_name),color=nextcord.Color.red())
     embed.add_field(name="Reason",value='{}'.format(status_json[0]['ErrorMsg']),inline=False)
     embed.add_field(name="Tips",value="**/funguy_help**\nExecute command /funguy_help for more info",inline=False)
-    embed.add_field(name="/funguy_add",value="_Example_ : /funguy_add 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25",inline=False)
+    embed.add_field(name="/funguy_add",value="Example : /funguy_add 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25",inline=False)
 
   else: 
     embed = nextcord.Embed(title=title,description="Hello **{}** . Below is your data I have found in our database.".format(discord_name),color=nextcord.Color.green())
@@ -151,7 +152,7 @@ async def funguy_status(interaction: Interaction):
 
     
 
-@client.slash_command(name="funguy_add", description="_Example_ : /funguy_add 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25", guild_ids=[ServerID])
+@client.slash_command(name="funguy_add", description="Example : /funguy_add 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25", guild_ids=[ServerID])
 async def funguy_add(interaction: Interaction,
                         wallet_address : str = SlashOption(description="Polygon (MATIC) wallet address"),
                         number_of_funguys_owned : str = SlashOption(description="How many items (NFT's) do you own from the Funguy Family collection?"),
@@ -197,7 +198,7 @@ async def funguy_add(interaction: Interaction,
     await interaction.response.send_message(embed=embed,ephemeral=True)
 
 
-@client.slash_command(name="funguy_update", description="_Example_ : /funguy_update 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25", guild_ids=[ServerID])
+@client.slash_command(name="funguy_update", description="Example : /funguy_update 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25", guild_ids=[ServerID])
 async def funguy_update(interaction: Interaction,
                         wallet_address : str = SlashOption(description="Polygon (MATIC) wallet address"),
                         number_of_funguys_owned : str = SlashOption(description="How many items (NFT's) do you own from the Funguy Family collection?"),
@@ -240,7 +241,7 @@ async def funguy_update(interaction: Interaction,
     await interaction.response.send_message(embed=embed,ephemeral=True)
 
 
-@client.slash_command(name="calculate_rewards", description="_Example_ : /calculate_rewards January 2022 - Tuschay Coin ($TSHY) Airdrop", guild_ids=[ServerID],default_permission=False)
+@client.slash_command(name="calculate_rewards", description="Example : /calculate_rewards January 2022 - Tuschay Coin ($TSHY) Airdrop", guild_ids=[ServerID],default_permission=False)
 async def calculate_rewards(interaction: Interaction,
                             airdrop_name : str = SlashOption(description="Month Year - Tuschay Coin ($TSHY) Airdrop"),
                             ):
@@ -276,6 +277,28 @@ async def calculate_rewards(interaction: Interaction,
     embed.add_field(name="Tip",value='Don\'t be sneaky',inline=False)
     await interaction.response.send_message(embed=embed,ephemeral=True)
 
+
+@client.slash_command(name="funguy_top_ten", description="View top ten funguy users.", guild_ids=[ServerID])
+async def funguy_help(interaction: Interaction):
+  roles = interaction.user.roles
+  if not await role_check(interaction,roles):
+      return
+    
+    
+  
+  user = interaction.user
+  user_id,avatar_url,discord_name,discord_tag = await get_user_details(user)
+  
+  embed = nextcord.Embed(title=title,description="Hello **{}** . Below are the top 10 funguy members.".format(discord_name),color=nextcord.Color.green())
+  
+  json_size = len(status_json)
+
+  for i in range(0, status_json):  
+    embed.add_field(value="{} - {} , funguy owned: {}".format(i, status_json[i]['DiscordUserName'], status_json[i]['NumberOfFunguysOwned']),inline=False)
+
+  embed.set_author(name='| Funguy - Help', icon_url=avatar_url) 
+  embed.set_thumbnail(url=avatar_url) 
+  await interaction.response.send_message(embed=embed,ephemeral=True)
 
 async def get_user_details(user):
 
