@@ -279,7 +279,7 @@ async def calculate_rewards(interaction: Interaction,
 
 
 @client.slash_command(name="funguy_top_ten", description="View top ten funguy users.", guild_ids=[ServerID])
-async def funguy_help(interaction: Interaction):
+async def funguy_top_ten(interaction: Interaction):
   roles = interaction.user.roles
   if not await role_check(interaction,roles):
       return
@@ -288,23 +288,23 @@ async def funguy_help(interaction: Interaction):
   
   user = interaction.user
   user_id,avatar_url,discord_name,discord_tag = await get_user_details(user)
-  if await verify.check_if_admin(user_id):
-    embed = nextcord.Embed(title=title,description="Hello **{}** . Below are the top 10 funguy members.".format(discord_name),color=nextcord.Color.green())
-    status_result = await db.view_top_ten_funguy_user()
-    status_json = json.loads(status_result[0][0])
-    json_size = len(status_json)
 
-    for i in range(0, json_size):  
-      embed.add_field(name="{} place".format(i+1),value="{} - funguy owned: {}".format(status_json[i]['DiscordUserName'], status_json[i]['NumberOfFunguysOwned']),inline=False)
+  embed = nextcord.Embed(title=title,description="Hello **{}**. Below is a current ranking of the Top 10 Funguy Holders. Be sure to use /funguy_update to add any Funguys you own to the bot!".format(discord_name),color=nextcord.Color.green())
+  status_result = await db.view_top_ten_funguy_user()
+  status_json = json.loads(status_result[0][0])
+  json_size = len(status_json)
 
-    embed.set_author(name='| Funguy - Help', icon_url=avatar_url) 
-    embed.set_thumbnail(url=avatar_url) 
+  embed.add_field(name="1st place",value=":first_place: {} - funguy owned: {}".format(status_json[0]['DiscordUserName'], status_json[0]['NumberOfFunguysOwned']),inline=False)
+  embed.add_field(name="2nd place",value=":second_place: {} - funguy owned: {}".format(status_json[1]['DiscordUserName'], status_json[1]['NumberOfFunguysOwned']),inline=False)
+  embed.add_field(name="3rd place",value=":third_place: {} - funguy owned: {}".format(status_json[2]['DiscordUserName'], status_json[2]['NumberOfFunguysOwned']),inline=False)
 
-    await interaction.response.send_message(embed=embed,ephemeral=True)
+  for i in range(3, json_size):  
+    embed.add_field(name="{}th place".format(i+1),value=":medal: {} - funguy owned: {}".format(status_json[i]['DiscordUserName'], status_json[i]['NumberOfFunguysOwned']),inline=False)
 
-  else:
-    embed = nextcord.Embed(title=title,description="❌ **Sorry, in development** ❌",color=nextcord.Color.red())
-    await interaction.response.send_message(embed=embed,ephemeral=True)    
+  embed.set_author(name='| Funguy - Top 10', icon_url=avatar_url) 
+  embed.set_thumbnail(url=avatar_url) 
+
+  await interaction.response.send_message(embed=embed,ephemeral=True)
 
 async def get_user_details(user):
 
