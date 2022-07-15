@@ -5,6 +5,7 @@ from nextcord.ext import commands
 import json
 import logging
 from database import db_commands
+from polygon import polygonAPI
 import verifications as verify
 import sys
 from keepalive import keep_alive
@@ -85,6 +86,7 @@ async def funguy_help(interaction: Interaction):
   
   embed = nextcord.Embed(title=title, description="Hello **{}**".format(discord_name), color=nextcord.Color.blue())
   embed.add_field(name="/funguy_status",value="> Gives your funguy information.",inline=False)
+  embed.add_field(name="/funguy_flex",value="> Flex your funguy information.",inline=False)
   embed.add_field(name="/funguy_top_10",value="> Gives information about the top 10 funguy members.",inline=False)
   embed.add_field(name="/funguy_add",value="""> _Add your data for the Tuschay Coin ($TSHY) Airdrop_
                                               > /funguy_add 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25
@@ -241,7 +243,7 @@ async def funguy_update(interaction: Interaction,
     await interaction.response.send_message(embed=embed,ephemeral=True)
 
 
-@client.slash_command(name="calculate_rewards", description="Example : /calculate_rewards January 2022 - Tuschay Coin ($TSHY) Airdrop", guild_ids=[ServerID],default_permission=False)
+@client.slash_command(name="calculate_rewards", description="Example : /calculate_rewards January 2022 - Tuschay Coin ($TSHY) Airdrop", guild_ids=[ServerID],default_member_permissions=0)
 async def calculate_rewards(interaction: Interaction,
                             airdrop_name : str = SlashOption(description="Month Year - Tuschay Coin ($TSHY) Airdrop"),
                             ):
@@ -305,6 +307,48 @@ async def funguy_top_ten(interaction: Interaction):
   embed.set_thumbnail(url=avatar_url) 
 
   await interaction.response.send_message(embed=embed,ephemeral=True)
+
+@client.slash_command(name="funguy_flex",description="Flex your funguys",guild_ids=[ServerID])
+async def funguy_flex(interaction: Interaction):
+  roles = interaction.user.roles
+  if not await role_check(interaction,roles):
+      return
+
+  user = interaction.user
+  user_id,avatar_url,discord_name,discord_tag = await get_user_details(user)
+  
+  logger.info('User {}#{} executed  -  /funguy_flex command'.format(discord_name, discord_tag))
+
+  status_result = await db.view_funguy_user(user_id)
+  status_json = json.loads(status_result[0][0])
+
+  view = nextcord.ui.View()
+
+
+  if status_json[0]['STATUS'] == 0:
+    embed = nextcord.Embed(title=title,description="Hello **{}** . I was unable to find any existing data for your user.".format(discord_name),color=nextcord.Color.red())
+    embed.add_field(name="Reason",value='{}'.format(status_json[0]['ErrorMsg']),inline=False)
+    embed.add_field(name="Tips",value="**/funguy_help**\nExecute command /funguy_help for more info",inline=False)
+    embed.add_field(name="/funguy_add",value="Example : /funguy_add 0x123120e08556037329d2b34ce553e1f255ccc7e9 25 1990-01-25",inline=False)
+
+  else: 
+    polygon = polygonAPI.MakeApiCall(
+      "https://api.polygonscan.com/api",
+      "account",
+      "tokenbalance",
+      "0xD8f9a909649BA317175A4f2F5416958Af64a0BFC",
+      status_json[0]['WalletAddress']
+    )
+    embed = nextcord.Embed(title=title,description="**{}** is showing off their wallet balance! Type in /funguy_flex to show yours!".format(discord_name),color=nextcord.Color.green())
+    embed.add_field(name="Number of Funguys Owned",value="\N{cyclone} {}".format(status_json[0]['NumberOfFunguysOwned']),inline=False)
+    embed.add_field(name="Number of Funguys Baby Owned",value="\N{cyclone} {}".format(status_json[0]['NumberOfFunguysBabyOwned']),inline=False) 
+    embed.add_field(name="Number of Tshy Coin Owned",value=":moneybag: {}".format(polygon.tuschay_coin),inline=False) 
+    
+  embed.set_author(name='| Funguy - Flex ', icon_url=avatar_url)    
+  embed.set_thumbnail(url=avatar_url)
+  await interaction.response.send_message(embed=embed,ephemeral=False,view=view)
+
+
 
 async def get_user_details(user):
 
